@@ -14,10 +14,10 @@ const sentences = [
 
 const EnglishStudy = () => {
   const [currentPair, setCurrentPair] = useState(sentences[0]);
-  const [typedText, setTypedText] = useState("");
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null as boolean | null);
   const inputRef = useRef<HTMLInputElement>(null);
+
   console.log(isCorrect);
 
   useEffect(() => {
@@ -31,24 +31,21 @@ const EnglishStudy = () => {
     return sentences[Math.floor(Math.random() * sentences.length)];
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const inputValue = e.target.value;
-    setTypedText(inputValue);
-  }
-
   function removePunctuation(text: string): string {
     return text.replace(/[.!?']/g, "");
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
+      const inputValue = inputRef.current?.value || "";
+
       const isAnswerCorrect =
-        removePunctuation(typedText.toLowerCase()) ===
+        removePunctuation(inputValue.toLowerCase()) ===
         removePunctuation(currentPair.en.toLowerCase());
       setIsCorrect(isAnswerCorrect);
 
       if (isAnswerCorrect) {
-        setTypedText("");
+        inputRef.current!.value = "";
         setShowCorrectAnswer(false);
         setCurrentPair(getRandomPair());
       } else {
@@ -60,6 +57,10 @@ const EnglishStudy = () => {
           setIsCorrect(null);
         }
       }, 2000);
+    } else if (e.key === "u" && e.ctrlKey) {
+      e.preventDefault();
+      inputRef.current!.value = "";
+      inputRef.current!.focus();
     }
   }
   return (
@@ -76,14 +77,13 @@ const EnglishStudy = () => {
         {showCorrectAnswer && (
           <p className="text-sm text-gray-600">{currentPair.en}</p>
         )}
-        <div className="mt-4">
+        <div className="mt-4 mb-4">
           <input
             ref={inputRef}
             type="text"
-            value={typedText}
-            onChange={handleInputChange}
+            className="w-full rounded border border-gray-300 p-2"
+            placeholder="Type the English sentence here..."
             onKeyDown={handleKeyDown}
-            className="mb-4 w-full rounded-md border border-gray-300 p-2 focus:border-blue-300 focus:outline-none focus:ring"
           />
         </div>
         <Transition
